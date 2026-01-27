@@ -28,6 +28,9 @@ import invariant from 'tiny-invariant';
 import {PageLayout} from '~/components/PageLayout';
 import {GenericError} from '~/components/GenericError';
 import {NotFound} from '~/components/NotFound';
+import {QuickViewProvider} from '~/context/QuickViewContext';
+import {QuickViewModal} from '~/components/QuickViewModal';
+import {QuickViewContent} from '~/components/QuickViewContent';
 import favicon from '~/assets/favicon.svg';
 import {seoPayload} from '~/lib/seo.server';
 import styles from '~/styles/app.css?url';
@@ -156,18 +159,23 @@ function Layout({children}: {children?: React.ReactNode}) {
       </head>
       <body>
         {data ? (
-          <Analytics.Provider
-            cart={data.cart}
-            shop={data.shop}
-            consent={data.consent}
-          >
-            <PageLayout
-              key={`${locale.language}-${locale.country}`}
-              layout={data.layout}
+          <QuickViewProvider>
+            <Analytics.Provider
+              cart={data.cart}
+              shop={data.shop}
+              consent={data.consent}
             >
-              {children}
-            </PageLayout>
-          </Analytics.Provider>
+              <PageLayout
+                key={`${locale.language}-${locale.country}`}
+                layout={data.layout}
+              >
+                {children}
+              </PageLayout>
+              <QuickViewModal>
+                <QuickViewContent />
+              </QuickViewModal>
+            </Analytics.Provider>
+          </QuickViewProvider>
         ) : (
           children
         )}

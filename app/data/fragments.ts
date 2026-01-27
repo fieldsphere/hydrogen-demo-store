@@ -88,3 +88,74 @@ export const FEATURED_COLLECTION_FRAGMENT = `#graphql
     }
   }
 `;
+
+export const PRODUCT_VARIANT_FRAGMENT = `#graphql
+  fragment ProductVariantQuickView on ProductVariant {
+    id
+    availableForSale
+    selectedOptions {
+      name
+      value
+    }
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+    price {
+      amount
+      currencyCode
+    }
+    compareAtPrice {
+      amount
+      currencyCode
+    }
+    sku
+    title
+    product {
+      title
+      handle
+    }
+  }
+`;
+
+export const PRODUCT_QUICK_VIEW_FRAGMENT = `#graphql
+  fragment ProductQuickView on Product {
+    id
+    title
+    handle
+    vendor
+    descriptionHtml
+    options {
+      name
+      optionValues {
+        name
+        firstSelectableVariant {
+          ...ProductVariantQuickView
+        }
+        swatch {
+          color
+          image {
+            previewImage {
+              url
+            }
+          }
+        }
+      }
+    }
+    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
+      ...ProductVariantQuickView
+    }
+    adjacentVariants(selectedOptions: $selectedOptions) {
+      ...ProductVariantQuickView
+    }
+    media(first: 5) {
+      nodes {
+        ...Media
+      }
+    }
+  }
+  ${PRODUCT_VARIANT_FRAGMENT}
+`;

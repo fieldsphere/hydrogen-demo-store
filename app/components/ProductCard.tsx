@@ -9,6 +9,7 @@ import {Button} from '~/components/Button';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {isDiscounted, isNewArrival} from '~/lib/utils';
 import {getProductPlaceholder} from '~/lib/placeholders';
+import {useQuickView} from '~/context/QuickViewContext';
 
 export function ProductCard({
   product,
@@ -26,6 +27,15 @@ export function ProductCard({
   quickAdd?: boolean;
 }) {
   let cardLabel;
+
+  // Safely get Quick View context (may not be available in all contexts)
+  let openQuickView: ((handle: string) => void) | null = null;
+  try {
+    const quickView = useQuickView();
+    openQuickView = quickView.openQuickView;
+  } catch {
+    // Context not available, Quick View button won't render
+  }
 
   const cardProduct: Product = product?.variants
     ? (product as Product)
@@ -48,12 +58,13 @@ export function ProductCard({
   return (
     <div className="flex flex-col gap-2">
       <Link
+        className="group"
         onClick={onClick}
         to={`/products/${product.handle}`}
         prefetch="viewport"
       >
         <div className={clsx('grid gap-4', className)}>
-          <div className="card-image aspect-[4/5] bg-primary/5">
+          <div className="card-image aspect-[4/5] bg-primary/5 relative">
             {image && (
               <Image
                 className="object-cover w-full fadeIn"
@@ -71,6 +82,18 @@ export function ProductCard({
             >
               {cardLabel}
             </Text>
+            {openQuickView && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openQuickView!(product.handle);
+                }}
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-contrast text-primary px-4 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg hover:bg-primary hover:text-contrast text-sm font-medium"
+              >
+                Quick View
+              </button>
+            )}
           </div>
           <div className="grid gap-1">
             <Text
