@@ -62,12 +62,20 @@ export type AvailableProduct = {
 };
 
 export async function getAvailableProducts(page: Page, count = 12) {
-  const response = await page.request.get(
+  const apiUrl = new URL(
     `/api/products?count=${count}&sortKey=BEST_SELLING`,
+    page.url(),
   );
+
+  const response = await page.request.get(apiUrl.toString());
 
   if (!response.ok()) {
     throw new Error(`Failed to fetch products: ${response.status()}`);
+  }
+
+  const contentType = response.headers()['content-type'] ?? '';
+  if (!contentType.includes('application/json')) {
+    throw new Error(`Expected JSON from ${apiUrl.toString()}`);
   }
 
   const data = await response.json();
