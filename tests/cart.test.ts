@@ -175,22 +175,12 @@ test.describe('Cart', () => {
     const firstProduct = await addProductToCart({page, homePage, productPage});
     await closeCartDrawer(page);
 
-    let secondProduct;
-
-    try {
-      secondProduct = await addProductToCart({
-        page,
-        homePage,
-        productPage,
-        startIndex: firstProduct.index + 1,
-      });
-    } catch (error) {
-      test.skip(
-        true,
-        'Multiple available products required to validate multi-item carts.',
-      );
-      return;
-    }
+    const secondProduct = await addProductToCart({
+      page,
+      homePage,
+      productPage,
+      startIndex: firstProduct.index + 1,
+    });
 
     await expect(cartPage.getLineItems()).toHaveCount(2);
     await expect(page.getByTestId('subtotal')).toContainText(

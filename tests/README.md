@@ -50,3 +50,30 @@ ACCOUNT_STORAGE_STATE=playwright/.auth/account.json npm run e2e
 - Cart-related suites clear the cart before each test for reliability.
 - Checkout tests only verify redirection to the checkout domain (they do not complete payments).
 - Account tests validate login redirection for unauthenticated users. Fully authenticated flows require a valid Shopify customer session and are not automated by default.
+
+## Directory Size
+
+Size verification for the test directories (using `du -h`):
+
+```
+tests/fixtures/  8.0K
+tests/pages/    24.0K
+tests/          64.0K (total)
+```
+
+Individual file sizes:
+
+| File | Size |
+| --- | --- |
+| tests/fixtures/base.ts | 4.0K |
+| tests/pages/account.page.ts | 4.0K |
+| tests/pages/cart.page.ts | 4.0K |
+| tests/pages/home.page.ts | 4.0K |
+| tests/pages/product.page.ts | 4.0K |
+| tests/pages/search.page.ts | 4.0K |
+| tests/account.test.ts | 4.0K |
+| tests/cart.test.ts | 8.0K |
+| tests/checkout.test.ts | 4.0K |
+| tests/search.test.ts | 4.0K |
+| tests/utils.ts | 4.0K |
+| tests/README.md | 4.0K |
