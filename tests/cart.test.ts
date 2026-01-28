@@ -140,6 +140,31 @@ test.describe('Cart', () => {
     await expect(cartPage.getLineItems()).toHaveCount(1);
   });
 
+  test('renders cart page with items', async ({
+    page,
+    homePage,
+    productPage,
+    cartPage,
+  }) => {
+    const {price} = await addProductToCart({page, homePage, productPage});
+    await closeCartDrawer(page);
+
+    await cartPage.goto();
+    await cartPage.waitForSummary();
+
+    await expect(cartPage.getLineItems()).toHaveCount(1);
+    await expect(page.getByTestId('subtotal')).toContainText(
+      formatPrice(price),
+    );
+  });
+
+  test('closes cart drawer', async ({page, homePage, productPage}) => {
+    await addProductToCart({page, homePage, productPage});
+
+    await page.getByTestId('close-cart').click();
+    await expect(page.getByTestId('cart-drawer')).toHaveCount(0);
+  });
+
   test('supports multiple products in cart', async ({
     page,
     homePage,
