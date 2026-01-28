@@ -17,11 +17,31 @@ async function addProductToCart({
 }) {
   await homePage.goto();
   await homePage.openProducts();
-  await page.getByTestId('product-card').first().locator('a').first().click();
-  await page.getByTestId('add-to-cart').waitFor({state: 'visible'});
-  await productPage.addToCart();
-  await page.getByTestId('cart-drawer').waitFor({state: 'visible'});
-  await page.getByTestId('checkout-button').waitFor({state: 'visible'});
+
+  const productCards = page.getByTestId('product-card');
+  const productCount = await productCards.count();
+
+  for (let index = 0; index < productCount; index += 1) {
+    await productCards.nth(index).locator('a').first().click();
+    await page.waitForURL(/\/products\//);
+
+    const addToCartButton = page.getByTestId('add-to-cart');
+    const isAvailable = await addToCartButton
+      .isVisible({timeout: 2000})
+      .catch(() => false);
+
+    if (isAvailable) {
+      await productPage.addToCart();
+      await page.getByTestId('cart-drawer').waitFor({state: 'visible'});
+      await page.getByTestId('checkout-button').waitFor({state: 'visible'});
+      return;
+    }
+
+    await page.goBack();
+    await page.getByTestId('product-grid').waitFor({state: 'visible'});
+  }
+
+  throw new Error('No available products found in catalog');
 }
 
 test.describe('Checkout', () => {
