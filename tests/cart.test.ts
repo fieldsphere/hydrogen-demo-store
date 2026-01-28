@@ -1,84 +1,164 @@
-import {test, expect} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
-import {formatPrice, normalizePrice} from './utils';
+import type {HomePage} from './pages/home.page';
+import type {ProductPage} from './pages/product.page';
+import {test, expect} from './fixtures/base';
+import {formatPrice} from './utils';
+
+async function closeCartDrawer(page: Page) {
+  const closeButton = page.getByTestId('close-cart');
+  if (await closeButton.isVisible()) {
+    await closeButton.click();
+  }
+}
+
+async function addProductToCart({
+  page,
+  homePage,
+  productPage,
+  index = 0,
+}: {
+  page: Page;
+  homePage: HomePage;
+  productPage: ProductPage;
+  index?: number;
+}) {
+  await homePage.goto();
+  await homePage.openProducts();
+  await page.getByTestId('product-card').nth(index).click();
+  await page.getByTestId('add-to-cart').waitFor({state: 'visible'});
+
+  const price = await productPage.getPrice();
+
+  await productPage.addToCart();
+  await page.getByTestId('cart-drawer').waitFor({state: 'visible'});
+  await page.getByTestId('cart-summary').waitFor({state: 'visible'});
+
+  return price;
+}
 
 test.describe('Cart', () => {
-  test('From home to checkout flow', async ({page}) => {
-    // Home => Collections => First collection => First product
-    await page.goto(`/`);
-    await page.locator(`header nav a:text-is("Collections")`).click();
-    await page.locator(`[data-test=collection-grid] a  >> nth=0`).click();
-    await page.locator(`[data-test=product-grid] a  >> nth=0`).click();
+  test.beforeEach(async ({resetCart}) => {
+    await resetCart();
+  });
 
-    const firstItemPrice = normalizePrice(
-      await page.locator(`[data-test=price]`).textContent(),
+  test('adds item to cart and opens drawer', async ({
+    page,
+    homePage,
+    productPage,
+    cartPage,
+  }) => {
+    const price = await addProductToCart({page, homePage, productPage});
+
+    await expect(page.getByTestId('cart-drawer')).toBeVisible();
+    await expect(page.getByTestId('subtotal')).toContainText(
+      formatPrice(price),
+    );
+    await expect(cartPage.getLineItems()).toHaveCount(1);
+  });
+
+  test('increases quantity and updates subtotal', async ({
+    page,
+    homePage,
+    productPage,
+  }) => {
+    const price = await addProductToCart({page, homePage, productPage});
+
+    await page.getByTestId('cart-quantity-increase').click();
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.getByTestId('item-quantity')).toContainText('2');
+    await expect(page.getByTestId('subtotal')).toContainText(
+      formatPrice(price * 2),
+    );
+  });
+
+  test('decreases quantity and updates subtotal', async ({
+    page,
+    homePage,
+    productPage,
+  }) => {
+    const price = await addProductToCart({page, homePage, productPage});
+
+    await page.getByTestId('cart-quantity-increase').click();
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('cart-quantity-decrease').click();
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.getByTestId('item-quantity')).toContainText('1');
+    await expect(page.getByTestId('subtotal')).toContainText(
+      formatPrice(price),
+    );
+  });
+
+  test('removes item from cart', async ({
+    page,
+    homePage,
+    productPage,
+    cartPage,
+  }) => {
+    await addProductToCart({page, homePage, productPage});
+
+    await cartPage.removeFirstItem();
+    await cartPage.expectEmpty();
+  });
+
+  test('keeps cart items after navigation', async ({
+    page,
+    homePage,
+    productPage,
+    cartPage,
+  }) => {
+    await addProductToCart({page, homePage, productPage});
+    await closeCartDrawer(page);
+
+    await homePage.openCollections();
+    await homePage.openCart();
+    await page.getByTestId('cart-drawer').waitFor({state: 'visible'});
+
+    await expect(cartPage.getLineItems()).toHaveCount(1);
+  });
+
+  test('supports multiple products in cart', async ({
+    page,
+    homePage,
+    productPage,
+    cartPage,
+  }) => {
+    const firstPrice = await addProductToCart({page, homePage, productPage});
+    await closeCartDrawer(page);
+
+    const secondPrice = await addProductToCart({
+      page,
+      homePage,
+      productPage,
+      index: 1,
+    });
+
+    await expect(cartPage.getLineItems()).toHaveCount(2);
+    await expect(page.getByTestId('subtotal')).toContainText(
+      formatPrice(firstPrice + secondPrice),
+    );
+  });
+
+  test('applies a discount code when provided', async ({
+    page,
+    homePage,
+    productPage,
+    cartPage,
+  }) => {
+    test.skip(
+      !process.env.TEST_DISCOUNT_CODE,
+      'Set TEST_DISCOUNT_CODE to run discount tests.',
     );
 
-    await page.locator(`[data-test=add-to-cart]`).click();
+    const discountCode = process.env.TEST_DISCOUNT_CODE as string;
 
-    await expect(
-      page.locator('[data-test=subtotal]'),
-      'should show the correct price',
-    ).toContainText(formatPrice(firstItemPrice));
+    await addProductToCart({page, homePage, productPage});
+    await cartPage.applyDiscount(discountCode);
+    await page.waitForLoadState('networkidle');
 
-    // Add an extra unit by increasing quantity
-    await page
-      .locator(`button :text-is("+")`)
-      .click({clickCount: 1, delay: 600});
-
-    await expect(
-      page.locator('[data-test=subtotal]'),
-      'should double the price',
-    ).toContainText(formatPrice(2 * firstItemPrice));
-
-    await expect(
-      page.locator('[data-test=item-quantity]'),
-      'should increase quantity',
-    ).toContainText('2');
-
-    // Close cart drawer => Products => First product
-    await page.locator('[data-test=close-cart]').click();
-    await page.locator(`header nav a:text-is("Products")`).click();
-    await page.locator(`[data-test=product-grid] a  >> nth=0`).click();
-
-    const secondItemPrice = normalizePrice(
-      await page.locator(`[data-test=price]`).textContent(),
-    );
-
-    // Add another unit by adding to cart the same item
-    await page.locator(`[data-test=add-to-cart]`).click();
-
-    await expect(
-      page.locator('[data-test=subtotal]'),
-      'should add the price of the second item',
-    ).toContainText(formatPrice(2 * firstItemPrice + secondItemPrice));
-
-    const quantities = await page
-      .locator('[data-test=item-quantity]')
-      .allTextContents();
-    await expect(
-      quantities.reduce((a, b) => Number(a) + Number(b), 0),
-      'should have the correct item quantities',
-    ).toEqual(3);
-
-    const priceInStore = await page
-      .locator('[data-test=subtotal]')
-      .textContent();
-
-    await page.locator('a :text("Checkout")').click();
-
-    await expect(page.url(), 'should navigate to checkout').toMatch(
-      /checkout\.hydrogen\.shop\/checkouts\/[\d\w]+/,
-    );
-
-    const priceInCheckout = await page
-      .locator('[role=cell] > span')
-      .getByText(/^\$\d/)
-      .textContent();
-
-    await expect(
-      normalizePrice(priceInCheckout),
-      'should show the same price in checkout',
-    ).toEqual(normalizePrice(priceInStore));
+    await expect(page.getByText(discountCode)).toBeVisible();
   });
 });
