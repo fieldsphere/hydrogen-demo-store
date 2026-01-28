@@ -109,7 +109,13 @@ function CartDrawer({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
   if (!rootData) return null;
 
   return (
-    <Drawer open={isOpen} onClose={onClose} heading="Cart" openFrom="right">
+    <Drawer
+      open={isOpen}
+      onClose={onClose}
+      heading="Cart"
+      openFrom="right"
+      dataTest="cart-drawer"
+    >
       <div className="grid">
         <Suspense fallback={<CartLoading />}>
           <Await resolve={rootData?.cart}>
@@ -131,7 +137,13 @@ export function MenuDrawer({
   menu: EnhancedMenu;
 }) {
   return (
-    <Drawer open={isOpen} onClose={onClose} openFrom="left" heading="Menu">
+    <Drawer
+      open={isOpen}
+      onClose={onClose}
+      openFrom="left"
+      heading="Menu"
+      dataTest="menu-drawer"
+    >
       <div className="grid">
         <MenuMobileNav menu={menu} onClose={onClose} />
       </div>
@@ -208,6 +220,7 @@ function MobileHeader({
           <button
             type="submit"
             className="relative flex items-center justify-center w-8 h-8"
+            data-test="search-button"
           >
             <IconSearch />
           </button>
@@ -221,6 +234,7 @@ function MobileHeader({
             variant="minisearch"
             placeholder="Search"
             name="q"
+            data-test="search-input"
           />
         </Form>
       </div>
@@ -306,10 +320,12 @@ function DesktopHeader({
             variant="minisearch"
             placeholder="Search"
             name="q"
+            data-test="search-input"
           />
           <button
             type="submit"
             className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5"
+            data-test="search-button"
           >
             <IconSearch />
           </button>
@@ -326,7 +342,7 @@ function AccountLink({className}: {className?: string}) {
   const isLoggedIn = rootData?.isLoggedIn;
 
   return (
-    <Link to="/account" className={className}>
+    <Link to="/account" className={className} data-test="account-link">
       <Suspense fallback={<IconLogin />}>
         <Await resolve={isLoggedIn} errorElement={<IconLogin />}>
           {(isLoggedIn) => (isLoggedIn ? <IconAccount /> : <IconLogin />)}
@@ -394,6 +410,7 @@ function Badge({
     <button
       onClick={openCart}
       className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5"
+      data-test="cart-count"
     >
       {BadgeCounter}
     </button>
@@ -401,6 +418,7 @@ function Badge({
     <Link
       to="/cart"
       className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5"
+      data-test="cart-count"
     >
       {BadgeCounter}
     </Link>

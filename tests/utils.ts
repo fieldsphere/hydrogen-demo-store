@@ -1,3 +1,5 @@
+import type {Page} from '@playwright/test';
+
 /**
  * Formats a number as USD. Example: 1800 => $1,800.00
  */
@@ -30,4 +32,38 @@ export function normalizePrice(price: string | null) {
       .replace(/[.,]/g, '')
       .replace('-', '.'),
   );
+}
+
+export function getVisibleTestId(page: Page, testId: string) {
+  return page.locator(`[data-test="${testId}"]:visible`);
+}
+
+export async function waitForHydration(page: Page) {
+  await page.waitForLoadState('networkidle');
+  await page.getByTestId('cart-count').first().waitFor({state: 'visible'});
+}
+
+export async function clearCart(page: Page) {
+  await page.goto('/cart');
+  await page.waitForLoadState('networkidle');
+
+  const removeButtons = page.locator('[data-test="cart-item-remove"]:visible');
+  while (await removeButtons.count()) {
+    await removeButtons.first().click();
+    await page.waitForLoadState('networkidle');
+  }
+
+  await page.getByTestId('cart-empty').waitFor({state: 'visible'});
+}
+
+export async function getFirstProductTitle(page: Page) {
+  const titleLocator = page.getByTestId('product-card').first().locator('h3');
+  await titleLocator.waitFor({state: 'visible'});
+  const title = await titleLocator.textContent();
+
+  if (!title) {
+    throw new Error('Product title was not found');
+  }
+
+  return title.trim();
 }

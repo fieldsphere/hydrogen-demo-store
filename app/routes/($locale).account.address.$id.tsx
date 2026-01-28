@@ -191,7 +191,7 @@ export default function EditAddress() {
         {isNewAddress ? 'Add address' : 'Edit address'}
       </Text>
       <div className="max-w-lg">
-        <Form method="post">
+        <Form method="post" data-test="address-form">
           <input
             type="hidden"
             name="addressId"
@@ -336,6 +336,7 @@ export default function EditAddress() {
               id="defaultAddress"
               defaultChecked={defaultAddress?.id === address?.id}
               className="border-gray-500 rounded-sm cursor-pointer border-1"
+              data-test="address-default-checkbox"
             />
             <label
               className="inline-block ml-2 text-sm cursor-pointer"
@@ -350,6 +351,7 @@ export default function EditAddress() {
               type="submit"
               variant="primary"
               disabled={state !== 'idle'}
+              data-test="address-save-button"
             >
               {state !== 'idle' ? 'Saving' : 'Save'}
             </Button>
@@ -359,6 +361,7 @@ export default function EditAddress() {
               to=".."
               className="w-full mt-2 rounded focus:shadow-outline"
               variant="secondary"
+              data-test="address-cancel-button"
             >
               Cancel
             </Button>
