@@ -111,7 +111,7 @@ export default function AccountDetailsEdit() {
       <Text className="mt-4 mb-6" as="h3" size="lead">
         Update your profile
       </Text>
-      <Form method="post">
+      <Form method="post" data-test="account-edit-form">
         {actionData?.formError && (
           <div className="flex items-center justify-center mb-6 bg-red-100 rounded">
             <p className="m-4 text-sm text-red-900">{actionData.formError}</p>
@@ -148,12 +148,19 @@ export default function AccountDetailsEdit() {
             width="full"
             type="submit"
             disabled={state !== 'idle'}
+            data-test="account-save-button"
           >
             {state !== 'idle' ? 'Saving' : 'Save'}
           </Button>
         </div>
         <div className="mb-4">
-          <Button to=".." className="text-sm" variant="secondary" width="full">
+          <Button
+            to=".."
+            className="text-sm"
+            variant="secondary"
+            width="full"
+            data-test="account-cancel-button"
+          >
             Cancel
           </Button>
         </div>

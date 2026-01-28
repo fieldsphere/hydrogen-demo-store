@@ -15,7 +15,10 @@ export function AccountAddressBook({
 }) {
   return (
     <>
-      <div className="grid w-full gap-4 p-4 py-6 md:gap-8 md:p-8 lg:p-12">
+      <div
+        className="grid w-full gap-4 p-4 py-6 md:gap-8 md:p-8 lg:p-12"
+        data-test="address-book"
+      >
         <h3 className="font-bold text-lead">Address Book</h3>
         <div>
           {!addresses?.length && (
@@ -28,6 +31,7 @@ export function AccountAddressBook({
               to="address/add"
               className="mt-2 text-sm w-full mb-6"
               variant="secondary"
+              data-test="add-address-button"
             >
               Add an Address
             </Button>
@@ -58,7 +62,10 @@ function Address({
   defaultAddress?: boolean;
 }) {
   return (
-    <div className="lg:p-8 p-6 border border-gray-200 rounded flex flex-col">
+    <div
+      className="lg:p-8 p-6 border border-gray-200 rounded flex flex-col"
+      data-test="address-card"
+    >
       {defaultAddress && (
         <div className="mb-3 flex flex-row">
           <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/20 text-primary/50">
@@ -83,12 +90,16 @@ function Address({
           to={`/account/address/${encodeURIComponent(address.id)}`}
           className="text-left underline text-sm"
           prefetch="intent"
+          data-test="address-edit-link"
         >
           Edit
         </Link>
         <Form action="address/delete" method="delete">
           <input type="hidden" name="addressId" value={address.id} />
-          <button className="text-left text-primary/50 ml-6 text-sm">
+          <button
+            className="text-left text-primary/50 ml-6 text-sm"
+            data-test="address-remove-button"
+          >
             Remove
           </button>
         </Form>
