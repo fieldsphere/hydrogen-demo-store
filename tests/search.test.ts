@@ -40,4 +40,31 @@ test.describe('Search', () => {
 
     await expect(page).toHaveURL(/\/products\//);
   });
+
+  test('supports pagination when available', async ({
+    page,
+    homePage,
+    searchPage,
+  }) => {
+    await homePage.goto();
+    await homePage.openProducts();
+
+    const productTitle = await getFirstProductTitle(page);
+    const query = productTitle.split(' ')[0];
+
+    await homePage.search(query);
+    await expect(searchPage.getResults().first()).toBeVisible();
+
+    const nextLink = page.getByRole('link', {name: /^Next$/});
+    const hasNext = await nextLink.isVisible().catch(() => false);
+    if (!hasNext) {
+      test.skip(true, 'Search results fit on a single page.');
+      return;
+    }
+
+    const currentUrl = page.url();
+    await nextLink.click();
+    await expect(page).not.toHaveURL(currentUrl);
+    await expect(searchPage.getResults().first()).toBeVisible();
+  });
 });
