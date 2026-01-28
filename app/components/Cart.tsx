@@ -120,8 +120,12 @@ function CartDiscounts({
             type="text"
             name="discountCode"
             placeholder="Discount code"
+            data-test="cart-discount-input"
           />
-          <button className="flex justify-end font-medium whitespace-nowrap">
+          <button
+            className="flex justify-end font-medium whitespace-nowrap"
+            data-test="cart-discount-apply"
+          >
             Apply Discount
           </button>
         </div>
@@ -174,7 +178,7 @@ function CartLines({
       aria-labelledby="cart-contents"
       className={className}
     >
-      <ul className="grid gap-6 md:gap-10">
+      <ul className="grid gap-6 md:gap-10" data-test="cart-lines">
         {currentLines.map((line) => (
           <CartLineItem key={line.id} line={line as CartLine} />
         ))}
@@ -188,7 +192,7 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl: string}) {
 
   return (
     <div className="flex flex-col mt-2">
-      <a href={checkoutUrl} target="_self">
+      <a href={checkoutUrl} target="_self" data-test="checkout-button">
         <Button as="span" width="full">
           Continue to Checkout
         </Button>
@@ -213,7 +217,11 @@ function CartSummary({
   };
 
   return (
-    <section aria-labelledby="summary-heading" className={summary[layout]}>
+    <section
+      aria-labelledby="summary-heading"
+      className={summary[layout]}
+      data-test="cart-summary"
+    >
       <h2 id="summary-heading" className="sr-only">
         Order summary
       </h2>
@@ -252,6 +260,7 @@ function CartLineItem({line}: {line: CartLine}) {
     <li
       key={id}
       className="flex gap-4"
+      data-test="cart-line-item"
       style={{
         // Hide the line item if the optimistic data action is remove
         // Do not remove the form from the DOM
@@ -317,6 +326,7 @@ function ItemRemoveButton({lineId}: {lineId: CartLine['id']}) {
       <button
         className="flex items-center justify-center w-10 h-10 border rounded"
         type="submit"
+        data-test="cart-item-remove"
       >
         <span className="sr-only">Remove</span>
         <IconRemove aria-hidden="true" />
@@ -351,6 +361,7 @@ function CartLineQuantityAdjust({line}: {line: CartLine}) {
             className="w-10 h-10 transition text-primary/50 hover:text-primary disabled:text-primary/10"
             value={prevQuantity}
             disabled={optimisticQuantity <= 1}
+            data-test="cart-quantity-decrease"
           >
             <span>&#8722;</span>
             <OptimisticInput
@@ -370,6 +381,7 @@ function CartLineQuantityAdjust({line}: {line: CartLine}) {
             name="increase-quantity"
             value={nextQuantity}
             aria-label="Increase quantity"
+            data-test="cart-quantity-increase"
           >
             <span>&#43;</span>
             <OptimisticInput
@@ -450,7 +462,12 @@ export function CartEmpty({
   };
 
   return (
-    <div ref={scrollRef} className={container[layout]} hidden={hidden}>
+    <div
+      ref={scrollRef}
+      className={container[layout]}
+      hidden={hidden}
+      data-test="cart-empty"
+    >
       <section className="grid gap-6">
         <Text format>
           Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you

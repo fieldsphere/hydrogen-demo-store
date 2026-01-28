@@ -109,7 +109,13 @@ function CartDrawer({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
   if (!rootData) return null;
 
   return (
-    <Drawer open={isOpen} onClose={onClose} heading="Cart" openFrom="right">
+    <Drawer
+      open={isOpen}
+      onClose={onClose}
+      heading="Cart"
+      openFrom="right"
+      dataTest="cart-drawer"
+    >
       <div className="grid">
         <Suspense fallback={<CartLoading />}>
           <Await resolve={rootData?.cart}>
@@ -131,7 +137,13 @@ export function MenuDrawer({
   menu: EnhancedMenu;
 }) {
   return (
-    <Drawer open={isOpen} onClose={onClose} openFrom="left" heading="Menu">
+    <Drawer
+      open={isOpen}
+      onClose={onClose}
+      openFrom="left"
+      heading="Menu"
+      dataTest="menu-drawer"
+    >
       <div className="grid">
         <MenuMobileNav menu={menu} onClose={onClose} />
       </div>
