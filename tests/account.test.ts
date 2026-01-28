@@ -55,5 +55,25 @@ test.describe('Account', () => {
         ).toBeVisible();
       }
     });
+
+    test('opens and cancels profile edit modal', async ({page, accountPage}) => {
+      await accountPage.goto();
+
+      await page.getByTestId('account-edit-link').click();
+      await page.getByTestId('account-edit-form').waitFor({state: 'visible'});
+
+      await page.getByTestId('account-cancel-button').click();
+      await page.getByTestId('account-details').waitFor({state: 'visible'});
+    });
+
+    test('opens and cancels address modal', async ({page, accountPage}) => {
+      await accountPage.goto();
+
+      await page.getByTestId('add-address-button').click();
+      await page.getByTestId('address-form').waitFor({state: 'visible'});
+
+      await page.getByTestId('address-cancel-button').click();
+      await page.getByTestId('address-book').waitFor({state: 'visible'});
+    });
   });
 });
