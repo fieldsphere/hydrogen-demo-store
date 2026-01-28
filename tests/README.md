@@ -52,3 +52,4 @@ ACCOUNT_STORAGE_STATE=playwright/.auth/account.json npm run e2e
 - Account tests validate login redirection for unauthenticated users. Fully authenticated flows require a valid Shopify customer session and are not automated by default.
 - Some cart scenarios are skipped if the catalog only exposes a single sellable product during the run.
 - Search pagination is skipped when results fit on a single page.
+- Authenticated account tests may skip address/order checks if the account has no saved addresses or orders.
