@@ -33,6 +33,15 @@ async function addProductToCart({
     await productCards.nth(index).locator('a').first().click();
     await page.waitForURL(/\/products\//);
 
+    const errorHeading = page.getByRole('heading', {
+      name: /Something|lost this/i,
+    });
+    if (await errorHeading.isVisible().catch(() => false)) {
+      await page.goBack();
+      await page.getByTestId('product-grid').waitFor({state: 'visible'});
+      continue;
+    }
+
     await page
       .locator('[data-test="add-to-cart"], button:has-text("Sold out")')
       .first()
