@@ -17,7 +17,7 @@ async function addProductToCart({
 }) {
   await homePage.goto();
   await homePage.openProducts();
-  await page.getByTestId('product-card').first().click();
+  await page.getByTestId('product-card').first().locator('a').first().click();
   await page.getByTestId('add-to-cart').waitFor({state: 'visible'});
   await productPage.addToCart();
   await page.getByTestId('cart-drawer').waitFor({state: 'visible'});

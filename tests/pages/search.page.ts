@@ -22,6 +22,8 @@ export class SearchPage {
   }
 
   getResults(): Locator {
-    return this.page.getByTestId('search-results').locator('[data-test="product-card"]');
+    return this.page
+      .getByTestId('search-results')
+      .locator('[data-test="product-card"] a');
   }
 }

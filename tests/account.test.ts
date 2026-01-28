@@ -1,4 +1,5 @@
 import {test, expect} from './fixtures/base';
+import {getVisibleTestId} from './utils';
 
 const LOGIN_URL_REGEX =
   /\/account\/login|\/account\/authorize|shopify\.com|accounts\.shopify\.com/;
@@ -7,7 +8,7 @@ test.describe('Account', () => {
   test('account link redirects to login', async ({page, homePage}) => {
     await homePage.goto();
 
-    await page.getByTestId('account-link').click();
+    await getVisibleTestId(page, 'account-link').click();
     await expect(page).toHaveURL(LOGIN_URL_REGEX);
   });
 
