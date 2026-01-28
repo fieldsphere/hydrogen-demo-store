@@ -1,7 +1,11 @@
 import type {Locator, Page} from '@playwright/test';
 
 export class SearchPage {
-  constructor(private page: Page) {}
+  private page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   async goto(term = '') {
     const query = term ? `?q=${encodeURIComponent(term)}` : '';
