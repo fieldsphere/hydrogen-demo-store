@@ -1,5 +1,5 @@
 import {test, expect} from './fixtures/base';
-import {getAvailableProducts} from './utils';
+import {getFirstProductTitle} from './utils';
 
 test.describe('Search', () => {
   test('search from header returns results', async ({
@@ -8,10 +8,10 @@ test.describe('Search', () => {
     searchPage,
   }) => {
     await homePage.goto();
+    await homePage.openProducts();
 
-    const [product] = await getAvailableProducts(page, 1);
-    test.skip(!product, 'No available products returned from /api/products.');
-    const query = product.title.split(' ')[0];
+    const productTitle = await getFirstProductTitle(page);
+    const query = productTitle.split(' ')[0];
 
     await homePage.search(query);
     await expect(page).toHaveURL(/\/search\?q=/);
@@ -30,10 +30,10 @@ test.describe('Search', () => {
     searchPage,
   }) => {
     await homePage.goto();
+    await homePage.openProducts();
 
-    const [product] = await getAvailableProducts(page, 1);
-    test.skip(!product, 'No available products returned from /api/products.');
-    const query = product.title.split(' ')[0];
+    const productTitle = await getFirstProductTitle(page);
+    const query = productTitle.split(' ')[0];
 
     await homePage.search(query);
     await searchPage.getResults().first().click();

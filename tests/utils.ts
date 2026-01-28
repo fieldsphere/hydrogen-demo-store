@@ -56,40 +56,14 @@ export async function clearCart(page: Page) {
   await page.getByTestId('cart-empty').waitFor({state: 'visible'});
 }
 
-export type AvailableProduct = {
-  handle: string;
-  title: string;
-};
+export async function getFirstProductTitle(page: Page) {
+  const titleLocator = page.getByTestId('product-card').first().locator('h3');
+  await titleLocator.waitFor({state: 'visible'});
+  const title = await titleLocator.textContent();
 
-export async function getAvailableProducts(page: Page, count = 12) {
-  const apiUrl = new URL(
-    `/api/products?count=${count}&sortKey=BEST_SELLING`,
-    page.url(),
-  );
-
-  const response = await page.request.get(apiUrl.toString());
-
-  if (!response.ok()) {
-    throw new Error(`Failed to fetch products: ${response.status()}`);
+  if (!title) {
+    throw new Error('Product title was not found');
   }
 
-  const contentType = response.headers()['content-type'] ?? '';
-  if (!contentType.includes('application/json')) {
-    throw new Error(`Expected JSON from ${apiUrl.toString()}`);
-  }
-
-  const data = await response.json();
-  const products = Array.isArray(data?.products) ? data.products : [];
-
-  return products
-    .filter(
-      (product) =>
-        product?.variants?.nodes?.[0]?.availableForSale &&
-        product?.handle &&
-        product?.title,
-    )
-    .map((product) => ({
-      handle: product.handle as string,
-      title: product.title as string,
-    })) as AvailableProduct[];
+  return title.trim();
 }
