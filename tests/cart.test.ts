@@ -33,10 +33,13 @@ async function addProductToCart({
     await productCards.nth(index).locator('a').first().click();
     await page.waitForURL(/\/products\//);
 
+    await page
+      .locator('[data-test="add-to-cart"], button:has-text("Sold out")')
+      .first()
+      .waitFor({state: 'visible', timeout: 15000});
+
     const addToCartButton = page.getByTestId('add-to-cart');
-    const isAvailable = await addToCartButton
-      .isVisible({timeout: 2000})
-      .catch(() => false);
+    const isAvailable = await addToCartButton.isVisible().catch(() => false);
 
     if (isAvailable) {
       const price = await productPage.getPrice();
