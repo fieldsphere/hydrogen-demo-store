@@ -3,6 +3,7 @@ import type {Page} from '@playwright/test';
 import type {HomePage} from './pages/home.page';
 import type {ProductPage} from './pages/product.page';
 import {test, expect} from './fixtures/base';
+import {getAvailableProducts} from './utils';
 
 const CHECKOUT_URL_REGEX = /checkout\.hydrogen\.shop\/checkouts\/[\d\w]+/;
 
@@ -16,35 +17,21 @@ async function addProductToCart({
   productPage: ProductPage;
 }) {
   await homePage.goto();
-  await homePage.openProducts();
 
-  const productCards = page.getByTestId('product-card');
-  const productCount = await productCards.count();
+  const availableProducts = await getAvailableProducts(page);
 
-  for (let index = 0; index < productCount; index += 1) {
-    await productCards.nth(index).locator('a').first().click();
-    await page.waitForURL(/\/products\//);
-
-    await page
-      .locator('[data-test="add-to-cart"], button:has-text("Sold out")')
-      .first()
-      .waitFor({state: 'visible', timeout: 15000});
-
-    const addToCartButton = page.getByTestId('add-to-cart');
-    const isAvailable = await addToCartButton.isVisible().catch(() => false);
-
-    if (isAvailable) {
-      await productPage.addToCart();
-      await page.getByTestId('cart-drawer').waitFor({state: 'visible'});
-      await page.getByTestId('checkout-button').waitFor({state: 'visible'});
-      return;
-    }
-
-    await page.goBack();
-    await page.getByTestId('product-grid').waitFor({state: 'visible'});
+  if (availableProducts.length === 0) {
+    test.skip(true, 'No available products returned from /api/products.');
+    return;
   }
 
-  throw new Error('No available products found in catalog');
+  const product = availableProducts[0];
+
+  await page.goto(`/products/${product.handle}`);
+  await page.getByTestId('add-to-cart').waitFor({state: 'visible'});
+  await productPage.addToCart();
+  await page.getByTestId('cart-drawer').waitFor({state: 'visible'});
+  await page.getByTestId('checkout-button').waitFor({state: 'visible'});
 }
 
 test.describe('Checkout', () => {

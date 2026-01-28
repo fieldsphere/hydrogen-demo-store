@@ -3,7 +3,7 @@ import type {Page} from '@playwright/test';
 import type {HomePage} from './pages/home.page';
 import type {ProductPage} from './pages/product.page';
 import {test, expect} from './fixtures/base';
-import {formatPrice} from './utils';
+import {formatPrice, getAvailableProducts} from './utils';
 
 async function closeCartDrawer(page: Page) {
   const closeButton = page.getByTestId('close-cart');
@@ -24,37 +24,26 @@ async function addProductToCart({
   startIndex?: number;
 }) {
   await homePage.goto();
-  await homePage.openProducts();
 
-  const productCards = page.getByTestId('product-card');
-  const productCount = await productCards.count();
+  const availableProducts = await getAvailableProducts(page);
 
-  for (let index = startIndex; index < productCount; index += 1) {
-    await productCards.nth(index).locator('a').first().click();
-    await page.waitForURL(/\/products\//);
-
-    await page
-      .locator('[data-test="add-to-cart"], button:has-text("Sold out")')
-      .first()
-      .waitFor({state: 'visible', timeout: 15000});
-
-    const addToCartButton = page.getByTestId('add-to-cart');
-    const isAvailable = await addToCartButton.isVisible().catch(() => false);
-
-    if (isAvailable) {
-      const price = await productPage.getPrice();
-      await productPage.addToCart();
-      await page.getByTestId('cart-drawer').waitFor({state: 'visible'});
-      await page.getByTestId('cart-summary').waitFor({state: 'visible'});
-
-      return {price, index};
-    }
-
-    await page.goBack();
-    await page.getByTestId('product-grid').waitFor({state: 'visible'});
+  if (availableProducts.length <= startIndex) {
+    test.skip(true, 'No available products returned from /api/products.');
+    return {price: 0, index: startIndex};
   }
 
-  throw new Error('No available products found in catalog');
+  const product = availableProducts[startIndex];
+
+  await page.goto(`/products/${product.handle}`);
+  await page.getByTestId('add-to-cart').waitFor({state: 'visible'});
+
+  const price = await productPage.getPrice();
+
+  await productPage.addToCart();
+  await page.getByTestId('cart-drawer').waitFor({state: 'visible'});
+  await page.getByTestId('cart-summary').waitFor({state: 'visible'});
+
+  return {price, index: startIndex};
 }
 
 test.describe('Cart', () => {

@@ -56,14 +56,32 @@ export async function clearCart(page: Page) {
   await page.getByTestId('cart-empty').waitFor({state: 'visible'});
 }
 
-export async function getFirstProductTitle(page: Page) {
-  const titleLocator = page.getByTestId('product-card').first().locator('h3');
-  await titleLocator.waitFor({state: 'visible'});
-  const title = await titleLocator.textContent();
+export type AvailableProduct = {
+  handle: string;
+  title: string;
+};
 
-  if (!title) {
-    throw new Error('Product title was not found');
+export async function getAvailableProducts(page: Page, count = 12) {
+  const response = await page.request.get(
+    `/api/products?count=${count}&sortKey=BEST_SELLING`,
+  );
+
+  if (!response.ok()) {
+    throw new Error(`Failed to fetch products: ${response.status()}`);
   }
 
-  return title.trim();
+  const data = await response.json();
+  const products = Array.isArray(data?.products) ? data.products : [];
+
+  return products
+    .filter(
+      (product) =>
+        product?.variants?.nodes?.[0]?.availableForSale &&
+        product?.handle &&
+        product?.title,
+    )
+    .map((product) => ({
+      handle: product.handle as string,
+      title: product.title as string,
+    })) as AvailableProduct[];
 }
