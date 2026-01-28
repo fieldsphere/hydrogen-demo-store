@@ -75,5 +75,43 @@ test.describe('Account', () => {
       await page.getByTestId('address-cancel-button').click();
       await page.getByTestId('address-book').waitFor({state: 'visible'});
     });
+
+    test('opens existing address when available', async ({
+      page,
+      accountPage,
+    }) => {
+      await accountPage.goto();
+
+      const editLinks = page.getByTestId('address-edit-link');
+      if ((await editLinks.count()) === 0) {
+        test.skip(true, 'No saved addresses available to edit.');
+        return;
+      }
+
+      await editLinks.first().click();
+      await page.getByTestId('address-form').waitFor({state: 'visible'});
+
+      await page.getByTestId('address-cancel-button').click();
+      await page.getByTestId('address-book').waitFor({state: 'visible'});
+    });
+
+    test('opens order details when available', async ({
+      page,
+      accountPage,
+    }) => {
+      await accountPage.goto();
+
+      const orderCards = page.getByTestId('order-card');
+      if ((await orderCards.count()) === 0) {
+        test.skip(true, 'No orders available to view.');
+        return;
+      }
+
+      await orderCards.first().locator('a').first().click();
+      await expect(page).toHaveURL(/\/account\/orders\//);
+      await expect(
+        page.getByRole('heading', {name: 'Order detail'}),
+      ).toBeVisible();
+    });
   });
 });
