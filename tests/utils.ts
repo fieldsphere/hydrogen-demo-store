@@ -47,7 +47,7 @@ export async function clearCart(page: Page) {
   await page.goto('/cart');
   await page.waitForLoadState('networkidle');
 
-  const removeButtons = page.getByTestId('cart-item-remove');
+  const removeButtons = page.locator('[data-test="cart-item-remove"]:visible');
   while (await removeButtons.count()) {
     await removeButtons.first().click();
     await page.waitForLoadState('networkidle');
