@@ -3,6 +3,7 @@ import {getVisibleTestId} from './utils';
 
 const LOGIN_URL_REGEX =
   /\/account\/login|\/account\/authorize|shopify\.com|accounts\.shopify\.com/;
+const accountStorageState = process.env.ACCOUNT_STORAGE_STATE;
 
 test.describe('Account', () => {
   test('account link redirects to login', async ({page, homePage}) => {
@@ -18,5 +19,41 @@ test.describe('Account', () => {
   }) => {
     await accountPage.goto();
     await expect(page).toHaveURL(LOGIN_URL_REGEX);
+  });
+
+  test.describe('authenticated account', () => {
+    test.skip(
+      !accountStorageState,
+      'Set ACCOUNT_STORAGE_STATE to run authenticated account tests.',
+    );
+
+    test.use({storageState: accountStorageState});
+
+    test('shows account dashboard sections', async ({page, accountPage}) => {
+      await accountPage.goto();
+      await page.getByTestId('account-details').waitFor({state: 'visible'});
+      await page.getByTestId('address-book').waitFor({state: 'visible'});
+      await expect(page.getByRole('button', {name: 'Sign out'})).toBeVisible();
+
+      await expect(page.getByText('Order History')).toBeVisible();
+
+      const orderCards = page.getByTestId('order-card');
+      if ((await orderCards.count()) > 0) {
+        await expect(orderCards.first()).toBeVisible();
+      } else {
+        await expect(
+          page.getByText("You haven't placed any orders yet."),
+        ).toBeVisible();
+      }
+
+      const addressCards = page.getByTestId('address-card');
+      if ((await addressCards.count()) > 0) {
+        await expect(addressCards.first()).toBeVisible();
+      } else {
+        await expect(
+          page.getByText("You haven't saved any addresses yet."),
+        ).toBeVisible();
+      }
+    });
   });
 });

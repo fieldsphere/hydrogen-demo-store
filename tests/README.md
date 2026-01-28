@@ -24,8 +24,26 @@ Some tests require optional environment variables to run:
 | Variable | Description |
 | --- | --- |
 | `TEST_DISCOUNT_CODE` | Valid discount code to verify cart discount behavior |
+| `ACCOUNT_STORAGE_STATE` | Path to a Playwright storage state file for authenticated account coverage |
 
 If `TEST_DISCOUNT_CODE` is not set, the discount test is automatically skipped.
+If `ACCOUNT_STORAGE_STATE` is not set, authenticated account tests are skipped.
+
+### Creating an authenticated storage state
+
+1. Start the app: `npm run preview`
+2. Run Playwright codegen with storage output:
+
+```bash
+npx playwright codegen http://localhost:3000 --save-storage=playwright/.auth/account.json
+```
+
+3. Complete the Shopify customer login in the browser window.
+4. Re-run tests with:
+
+```bash
+ACCOUNT_STORAGE_STATE=playwright/.auth/account.json npm run e2e
+```
 
 ## Notes
 
